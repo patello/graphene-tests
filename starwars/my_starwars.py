@@ -2,20 +2,28 @@
 
 import graphene
 
-class Human(graphene.ObjectType):
+class Character(graphene.Interface):
     id = graphene.ID()
     name = graphene.String()
     friends_id = graphene.List(graphene.String)
     appears_in = graphene.List(graphene.Int)
-    home_planet = graphene.String(default_value=None)
-    primary_function = graphene.String(default_value=None)
-    friends = graphene.List(lambda: Human)
+    friends = graphene.List(lambda: Character)
 
     def resolve_friends(self, info):
         return [get_character(fid) for fid in self.friends_id]
 
+class Human(graphene.ObjectType):
+    class Meta:
+        interfaces = (Character,)
+    home_planet = graphene.String(default_value=None)
+
+class Droid(graphene.ObjectType):
+    class Meta:
+        interfaces = (Character,)
+    primary_function = graphene.String(default_value=None)
+
 class Query(graphene.ObjectType):
-    me = graphene.Field(Human,id=graphene.ID(default_value="1000"))
+    me = graphene.Field(Character,id=graphene.ID(default_value="1000"))
 
     def resolve_me(self, info, id):
         return get_character(id)
@@ -32,11 +40,11 @@ human_data = {
 }
 
 droid_data = { 
-    "2000" : Human(id="2000",name="C-3PO",friends_id=["1000", "1002", "1003", "2001"],appears_in=[4, 5, 6],primary_function="Protocol"),
-    "2001" : Human(id="2001",name="R2-D2",friends_id=["1000", "1002", "1003"],appears_in=[4, 5, 6],primary_function="Astromech")
+    "2000" : Droid(id="2000",name="C-3PO",friends_id=["1000", "1002", "1003", "2001"],appears_in=[4, 5, 6],primary_function="Protocol"),
+    "2001" : Droid(id="2001",name="R2-D2",friends_id=["1000", "1002", "1003"],appears_in=[4, 5, 6],primary_function="Astromech")
 }
 
-schema=graphene.Schema(query=Query)
+schema=graphene.Schema(query=Query,types=[Human,Droid])
 
 query = """
     query testQuery {
