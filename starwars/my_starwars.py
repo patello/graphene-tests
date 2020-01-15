@@ -2,11 +2,16 @@
 
 import graphene
 
+class Episode(graphene.Enum):
+    NEWHOPE = 4
+    EMPIRE = 5
+    JEDI = 6
+
 class Character(graphene.Interface):
     id = graphene.ID()
     name = graphene.String()
     friends_id = graphene.List(graphene.String)
-    appears_in = graphene.List(graphene.Int)
+    appears_in = graphene.List(Episode)
     friends = graphene.List(lambda: Character)
 
     def resolve_friends(self, info):
@@ -50,7 +55,7 @@ query = """
     query testQuery {
         me(id:1000){
             id
-            name
+            appearsIn
             friends{
                 name
                 ... on Droid {
@@ -63,4 +68,4 @@ query = """
 
 result = schema.execute(query)
 print(result.errors)
-print(result.data["me"]["friends"])
+print(result.data["me"])
