@@ -53,6 +53,9 @@ query = """
             name
             friends{
                 name
+                ... on Droid {
+                    primaryFunction
+                }
             }
         }
     }
